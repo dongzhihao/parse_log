@@ -3,8 +3,11 @@
 
 import json
 import warnings
+from db import getDB
 
 warnings.filterwarnings("ignore")
+
+conn, curr = getDB()
 
 
 def log_parse_heartbeat(log_data):
@@ -18,6 +21,7 @@ def log_parse_heartbeat(log_data):
 
 
 def log_parse_basicinfo(log_data):
+    '''
     appKey = log_data['appKey']
     deviceId = log_data['data']['deviceId']
     lineId = log_data['data']['lineId']
@@ -43,11 +47,18 @@ def log_parse_basicinfo(log_data):
     print ("%s %s %s %s %s %s %s %s %s %d %s %s %s"
            % (sid, appKey, deviceId, lineId, lineCode, lineName, lineShort, carryCode, carryNo, price,
               supplier, type, originalPrice,))
+    '''
+    pass
 
 
 def log_parse_businfo(log_data):
-    # print log_data
-    pass
+    appKey = log_data['appKey']
+    deviceId = log_data['data']['deviceId']
+    appVersion = log_data['data']['appVersion']
+    sql = "insert into DEVICE(appKey, deviceId, version) values ('%s', '%s')" % (appKey, deviceId, appVersion)
+    print sql
+
+    curr.execute(sql)
 
 
 def log_parse_time(log_data):
@@ -70,7 +81,7 @@ def log_parse_error(log_data):
 
 
 if __name__ == "__main__":
-    with open('/Users/dongzhihao/PycharmProjects/parse_log/event.2018-05-12.0.log', 'r') as f:
+    with open('/home/dong/PycharmProjects/parse_log/event.2018-05-14.0.log', 'r') as f:
         for json_array in f:
             log_array = json.loads(json_array)
             happenTime = log_array['happenTime']
@@ -90,3 +101,5 @@ if __name__ == "__main__":
                         print log_array['data']
                     except TypeError:
                         print log_array['data']
+    curr.close()
+    conn.close()
